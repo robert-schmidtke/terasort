@@ -15,15 +15,15 @@ class SparkTeraRangePartitioner(underlying:TotalOrderPartitioner,
                                 partitions:Int) extends Partitioner {
   def numPartitions: Int = partitions
   def getPartition(key: Any): Int = {
-    val textKey = key.asInstanceOf[Text]
-    underlying.getPartition(textKey)
+    val textKey = key.asInstanceOf[Array[Byte]]
+    underlying.getPartition(new Text(textKey))
   }
 }
 
 object SparkTeraSort {
 
-  implicit val textOrdering = new Ordering[Text] {
-    override def compare(a: Text, b: Text) = a.compareTo(b)
+  implicit def ArrayByteOrdering: Ordering[Array[Byte]] = Ordering.fromLessThan {
+    case (a, b) => a.compareTo(b) < 0
   }
 
   def main(args: Array[String]){
@@ -46,12 +46,15 @@ object SparkTeraSort {
     TeraInputFormat.writePartitionFile(jobContext, partitionFile)
 
     val inputFile = sc.newAPIHadoopFile[Text, Text, TeraInputFormat](inputPath)
+      .map(tp => (tp._1.getBytes, tp._2.getBytes))
     val partitioner = 
       new SparkTeraRangePartitioner(
           new TotalOrderPartitioner(hadoopConf, partitionFile),
           partitions
       )
     val repartitioned = inputFile.repartitionAndSortWithinPartitions( partitioner )
-    repartitioned.saveAsNewAPIHadoopFile[TeraOutputFormat](outputPath)
+    repartitioned
+      .map(tp => (new Text(tp._1), new Text(tp._2)))
+      .saveAsNewAPIHadoopFile[TeraOutputFormat](outputPath)
   }
 }
