@@ -5,11 +5,12 @@ import org.apache.spark.SparkContext._
 import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{NullWritable, SequenceFile, Text}
+import org.apache.hadoop.io.{BytesWritable, NullWritable, SequenceFile, Text}
 import org.apache.spark.{SparkConf, SparkContext, Partitioner}
 import org.apache.spark.RangePartitioner
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
+import Ordering.Implicits._
 
 class SparkTeraRangePartitioner(underlying:TotalOrderPartitioner,
                                 partitions:Int) extends Partitioner {
@@ -23,7 +24,7 @@ class SparkTeraRangePartitioner(underlying:TotalOrderPartitioner,
 object SparkTeraSort {
 
   implicit def ArrayByteOrdering: Ordering[Array[Byte]] = Ordering.fromLessThan {
-    case (a, b) => a.compareTo(b) < 0
+    case (a, b) => new BytesWritable(a).compareTo(new BytesWritable(b)) < 0
   }
 
   def main(args: Array[String]){
