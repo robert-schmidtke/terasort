@@ -35,11 +35,15 @@ object SparkTeraSort {
     val inputPath = hdfs+args(1)
     val outputPath = hdfs+args(2)
     val partitions = args(3).toInt
+    val sampleSize = args(4).toLong
+    val samplePartitions = args(5).toInt
 
     val hadoopConf = new JobConf()
     hadoopConf.set("fs.defaultFS", hdfs)
     hadoopConf.set("mapreduce.input.fileinputformat.inputdir", inputPath)
     hadoopConf.setInt("mapreduce.job.reduces", partitions)
+    hadoopConf.setLong("mapreduce.terasort.partitions.sample", sampleSize)
+    hadoopConf.setInt("mapreduce.terasort.num.partitions", samplePartitions)
 
     val partitionFile = new Path(outputPath,
                                  TeraInputFormat.PARTITION_FILENAME)

@@ -94,9 +94,8 @@ public class TeraInputFormat extends FileInputFormat<Text,Text> {
       System.out.println("Making " + numPartitions + " from " + numRecords + 
                          " sampled records");
       if (numPartitions > numRecords) {
-        throw new IllegalArgumentException
-          ("Requested more partitions than input keys (" + numPartitions +
-           " > " + numRecords + ")");
+        throw new IllegalArgumentException("Requested more partitions than input keys (" +
+          numPartitions + " > " + numRecords + ")");
       }
       new QuickSort().sort(this, 0, records.size());
       float stepSize = numRecords / (float) numPartitions;

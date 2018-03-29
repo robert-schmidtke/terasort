@@ -26,8 +26,8 @@ object FlinkTeraSort {
   }
 
   def main(args: Array[String]){
-    if(args.size != 4){
-      println("Usage: FlinkTeraSort hdfs inputPath outputPath #partitions ")
+    if(args.size != 6){
+      println("Usage: FlinkTeraSort hdfs inputPath outputPath #partitions sampleSize samplePartitions")
       return
     }
 
@@ -38,12 +38,16 @@ object FlinkTeraSort {
     val inputPath= hdfs+args(1)
     val outputPath = hdfs+args(2)
     val partitions = args(3).toInt
+    val sampleSize = args(4).toLong
+    val samplePartitions = args(5).toInt
     
     val mapredConf = new JobConf()
     mapredConf.set("fs.defaultFS", hdfs)
     mapredConf.set("mapreduce.input.fileinputformat.inputdir", inputPath)
     mapredConf.set("mapreduce.output.fileoutputformat.outputdir", outputPath)
     mapredConf.setInt("mapreduce.job.reduces", partitions)
+    mapredConf.setLong("mapreduce.terasort.partitions.sample", sampleSize)
+    mapredConf.setInt("mapreduce.terasort.num.partitions", samplePartitions)
 
     val partitionFile = new Path(outputPath, TeraInputFormat.PARTITION_FILENAME)
     val jobContext = Job.getInstance(mapredConf)
